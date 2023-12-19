@@ -9,7 +9,7 @@ typedef struct {
 
 void wifi_test()
 {
-    wifi_init(WIFI_SSID, WIFI_PASS);
+	wifi_init(WIFI_SSID, WIFI_PASS);
 	wait_for_wifi();
 	syncTime();
 

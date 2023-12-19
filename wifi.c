@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
+#include "nvs_flash.h"
 
 //флажок о том, что получен IP
 volatile int has_ip = 0;
@@ -30,12 +32,12 @@ int is_wifi_ready(void)
 }
 
 //ожидание подключения к вайфаю
-int wait_for_wifi()
+void wait_for_wifi()
 {
 	while(1)
 	{
 		if(is_wifi_ready())
-			return 0;
+			return;
 		printf("Waiting for wifi...\n");
 		vTaskDelay(1000/portTICK_PERIOD_MS);
 	}
@@ -133,6 +135,9 @@ static void on_lost_ip(void *arg, esp_event_base_t event_base, int32_t event_id,
 //инициализация вайфая
 esp_netif_t *wifi_init(char *ssid, char *passwd)
 {
+	//инициализация хранилища во флеш-памяти (нужно для кэширования параметров WiFi)
+	nvs_flash_init();
+
 	//инициализируем цикл обработчика событий
 	esp_event_loop_create_default();
 
@@ -145,7 +150,7 @@ esp_netif_t *wifi_init(char *ssid, char *passwd)
 
 	//получаем дефолтный конфиг для вайфая
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-	//cfg.nvs_enable = 1;
+	cfg.nvs_enable = 1;
 
 	//инитим вайфай дефолтным конфигом
 	esp_wifi_init(&cfg);
